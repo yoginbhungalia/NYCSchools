@@ -1,0 +1,42 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  APP_PACKAGE_NAME: ${{secrets.APP_PACKAGE_NAME}}
+
+jobs:
+  unit-test:
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout the code
+      uses: actions/checkout@v4
+
+    - name: setup JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+        cache: gradle
+
+    - name: Cache Gradle dependancy
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build and test
+      run: ./gradlew test    
